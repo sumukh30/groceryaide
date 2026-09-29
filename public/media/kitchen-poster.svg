@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420" fill="none">
+<defs><linearGradient id="wall" x2="1200" y2="420" gradientUnits="userSpaceOnUse"><stop stop-color="#f2eee1"/><stop offset="1" stop-color="#dce5ce"/></linearGradient><linearGradient id="bowl" x2="0" y2="1"><stop stop-color="#f7f2e6"/><stop offset="1" stop-color="#d6ccaf"/></linearGradient><linearGradient id="orange" x2="1" y2="1"><stop stop-color="#ecaf56"/><stop offset="1" stop-color="#ce772f"/></linearGradient></defs>
+<path fill="url(#wall)" d="M0 0h1200v420H0z"/>
+<path fill="#f9f6ee" opacity=".65" d="M800 0h7v260h-7zm190 0h7v260h-7zM780 126h420v7H780z"/>
+<path fill="#c8d1b8" d="M0 325h1200v95H0z"/>
+<ellipse cx="956" cy="363" rx="208" ry="22" fill="#70805b" opacity=".16"/>
+<path d="M1054 305c-12-115-19-159-58-219m58 213c12-80 50-129 85-161" stroke="#526f43" stroke-width="5"/>
+<g fill="#658354"><ellipse cx="1015" cy="133" rx="20" ry="49" transform="rotate(-43 1015 133)"/><ellipse cx="1045" cy="173" rx="18" ry="46" transform="rotate(24 1045 173)"/><ellipse cx="1099" cy="192" rx="19" ry="44" transform="rotate(48 1099 192)"/><ellipse cx="1077" cy="239" rx="19" ry="42" transform="rotate(30 1077 239)"/></g>
+<g fill="#819a67"><ellipse cx="989" cy="194" rx="18" ry="48" transform="rotate(-57 989 194)"/><ellipse cx="1021" cy="247" rx="20" ry="46" transform="rotate(-53 1021 247)"/><ellipse cx="1133" cy="146" rx="16" ry="37" transform="rotate(43 1133 146)"/></g>
+<path d="M1021 275h80l-12 80h-56z" fill="#b3ba9e"/>
+<path d="M752 159h52v18l16 27v112a12 12 0 0 1-12 12h-61a12 12 0 0 1-12-12V204l17-27z" fill="#faf7eb" stroke="#d7d8c5" stroke-width="2"/>
+<rect x="751" y="150" width="54" height="16" rx="4" fill="#81906c"/>
+<rect x="748" y="229" width="59" height="48" rx="4" fill="#d8e2c5"/>
+<path d="M777 241c-13 10-13 18 0 25 13-7 13-15 0-25" fill="#708555"/>
+<g fill="url(#orange)"><circle cx="879" cy="285" r="42"/><circle cx="949" cy="287" r="39"/><circle cx="914" cy="248" r="38"/></g>
+<path d="M912 215c7-24 31-22 40-17-8 17-23 25-40 17" fill="#4e7042"/>
+<path d="M825 301h173c-9 55-34 64-87 64s-77-9-86-64" fill="url(#bowl)" stroke="#c3bb9f" stroke-width="2"/>
+<ellipse cx="911" cy="302" rx="86" ry="9" fill="#ede6d3"/>
+<path d="M840 311c25 8 119 8 142 0" stroke="#d6ccaf" stroke-width="2"/>
+<ellipse cx="1122" cy="341" rx="34" ry="28" fill="url(#orange)"/>
+<path d="M1118 315c0-10 14-17 25-11-5 11-16 13-25 11" fill="#526f43"/>
+</svg>

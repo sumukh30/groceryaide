@@ -1,0 +1,59 @@
+.calendar-popover .rdp-root {
+  --rdp-accent-color: var(--primary);
+  --rdp-accent-background-color: var(--success-soft);
+  --rdp-day-height: 40px;
+  --rdp-day-width: 40px;
+  --rdp-day_button-height: 38px;
+  --rdp-day_button-width: 38px;
+  --rdp-selected-border: 2px solid var(--primary);
+  --rdp-today-color: var(--accent);
+  --rdp-animation_duration: 200ms;
+  margin-inline: auto;
+  width: fit-content;
+}
+.calendar-popover .rdp-day_button {
+  padding: 0;
+  min-height: 38px;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+}
+.calendar-popover .rdp-selected .rdp-day_button {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+.calendar-popover .rdp-today:not(.rdp-selected) .rdp-day_button {
+  text-decoration: underline;
+  text-underline-offset: 5px;
+  font-weight: 750;
+}
+.calendar-popover .rdp-weekday {
+  color: var(--muted-text);
+  font-size: 0.75rem;
+}
+.calendar-popover .rdp-month_caption {
+  font-size: 0.95rem;
+}
+.calendar-popover .rdp-button_previous,
+.calendar-popover .rdp-button_next {
+  min-height: 44px;
+  min-width: 44px;
+}
+.calendar-popover .rdp-chevron {
+  fill: var(--primary);
+}
+@media (max-width: 400px) {
+  .calendar-popover .rdp-root {
+    --rdp-day-width: clamp(30px, calc((100vw - 88px) / 7), 35px);
+    --rdp-day_button-width: calc(var(--rdp-day-width) - 1px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .calendar-popover .rdp-root {
+    --rdp-animation_duration: 0s;
+  }
+}
+
+/* DayPicker retains a snapshot during month transitions. Keep its duplicated controls out of keyboard focus. */
+.calendar-popover .rdp-month[aria-hidden='true'] {
+  visibility: hidden;
+}

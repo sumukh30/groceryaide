@@ -22,3 +22,15 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local secrets, test output, and deployment tooling
+.env
+.env.*
+!.env.example
+coverage/
+playwright-report/
+test-results/
+.wrangler/
+
+# Personal project notes (not application source)
+/Notes.txt
