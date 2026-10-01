@@ -15,15 +15,15 @@ npm run dev
 
 Open the URL printed by Vite. No environment variables or secrets are required.
 
-| Command | Purpose |
-| --- | --- |
-| `npm run dev` | Development server with live updates |
-| `npm test` | Run the automated tests once |
-| `npm run test:watch` | Rerun tests while editing |
-| `npm run lint` | Run the configured Oxlint checks |
-| `npm run build` | Type-check and create production files in `dist/` |
-| `npm run preview` | Serve the existing production build locally |
-| `npm run check` | Lint, tests, and production build in sequence |
+| Command              | Purpose                                           |
+| -------------------- | ------------------------------------------------- |
+| `npm run dev`        | Development server with live updates              |
+| `npm test`           | Run the automated tests once                      |
+| `npm run test:watch` | Rerun tests while editing                         |
+| `npm run lint`       | Run the configured Oxlint checks                  |
+| `npm run build`      | Type-check and create production files in `dist/` |
+| `npm run preview`    | Serve the existing production build locally       |
+| `npm run check`      | Lint, tests, and production build in sequence     |
 
 `preview` is for local verification, not a production server. Use HTTPS for a public deployment.
 
@@ -42,19 +42,19 @@ Quantity is an integer from 1 through 999; names are trimmed and limited to 100 
 
 ## Architecture
 
-| File | Responsibility |
-| --- | --- |
-| `src/domain/inventory.ts` | Types, validation, immutable CRUD operations, summaries, date grouping |
-| `src/domain/storage.ts` | Versioned schema validation, JSON import/export, localStorage adapter |
-| `src/hooks/useInventory.ts` | React state, persistence status, storage errors and stale-tab protection |
-| `src/components/ItemForm.tsx` | Accessible add/edit form |
-| `src/components/ItemCard.tsx` | Grocery details and actions |
-| `src/App.tsx` | Dashboard, shopping list, history and backup workflow |
-| `src/index.css` | Tailwind import, responsive layout and visual styles |
-| `src/domain/*.test.ts` | Domain and persistence tests |
-| `src/App.test.tsx` | User interaction and recovery tests with Testing Library/jsdom |
-| `.github/workflows/ci.yml` | Install, lint, test, build, and upload build artifact |
-| `public/_headers` | Cloudflare Pages security headers |
+| File                          | Responsibility                                                           |
+| ----------------------------- | ------------------------------------------------------------------------ |
+| `src/domain/inventory.ts`     | Types, validation, immutable CRUD operations, summaries, date grouping   |
+| `src/domain/storage.ts`       | Versioned schema validation, JSON import/export, localStorage adapter    |
+| `src/hooks/useInventory.ts`   | React state, persistence status, storage errors and stale-tab protection |
+| `src/components/ItemForm.tsx` | Accessible add/edit form                                                 |
+| `src/components/ItemCard.tsx` | Grocery details and actions                                              |
+| `src/App.tsx`                 | Dashboard, shopping list, history and backup workflow                    |
+| `src/index.css`               | Tailwind import, responsive layout and visual styles                     |
+| `src/domain/*.test.ts`        | Domain and persistence tests                                             |
+| `src/App.test.tsx`            | User interaction and recovery tests with Testing Library/jsdom           |
+| `.github/workflows/ci.yml`    | Install, lint, test, build, and upload build artifact                    |
+| `public/_headers`             | Cloudflare Pages security headers                                        |
 
 Domain code has no React dependency. Untrusted backup data is parsed as `unknown`, checked field by field, and reconstructed from allowed fields. No imported content is interpreted as HTML. Schema version 1 is shared by browser persistence and downloadable backups; unsupported versions are rejected rather than guessed. Add explicit migrations and compatibility tests before changing that schema.
 
@@ -64,17 +64,17 @@ The UI uses cream surfaces, natural greens, warm orange accents, system fonts, a
 
 UI components:
 
-| File | Responsibility |
-| --- | --- |
-| `src/components/StatusBadge.tsx` | Explicit Used/Discarded history labels and decorative icons |
-| `src/components/HeroBackdrop.tsx` | Static fallback and deferred hero video with motion/data-saving safeguards |
-| `src/components/CategorySelect.tsx` | Animated listbox, arrow/Home/End keys, first-letter navigation |
-| `src/components/DateField.tsx` | Labelled date text input, popup and deferred calendar |
-| `src/components/Calendar.tsx`, `Calendar.css` | Themed DayPicker and local calendar-date conversion |
-| `src/hooks/useReducedMotion.ts` | Live reduced-motion preference for calendar animation |
-| `src/hooks/useDisclosure.ts` | Outside click, Escape, focus restoration, inert exit animation |
-| `src/components/LoadBoundary.tsx` | Local recovery message if an optional chunk cannot load |
-| `src/components/Controls.test.tsx`, `HeroBackdrop.test.tsx` | Keyboard, date and media behavior tests |
+| File                                                        | Responsibility                                                             |
+| ----------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `src/components/StatusBadge.tsx`                            | Explicit Used/Discarded history labels and decorative icons                |
+| `src/components/HeroBackdrop.tsx`                           | Static fallback and deferred hero video with motion/data-saving safeguards |
+| `src/components/CategorySelect.tsx`                         | Animated listbox, arrow/Home/End keys, first-letter navigation             |
+| `src/components/DateField.tsx`                              | Labelled date text input, popup and deferred calendar                      |
+| `src/components/Calendar.tsx`, `Calendar.css`               | Themed DayPicker and local calendar-date conversion                        |
+| `src/hooks/useReducedMotion.ts`                             | Live reduced-motion preference for calendar animation                      |
+| `src/hooks/useDisclosure.ts`                                | Outside click, Escape, focus restoration, inert exit animation             |
+| `src/components/LoadBoundary.tsx`                           | Local recovery message if an optional chunk cannot load                    |
+| `src/components/Controls.test.tsx`, `HeroBackdrop.test.tsx` | Keyboard, date and media behavior tests                                    |
 
 ### Summary colors and interaction language
 
@@ -208,15 +208,15 @@ Follow the upload steps above to publish your branch. Open a pull request and in
 
 To deploy, use Cloudflare Pages' **Git integration** and connect the chosen repository. Select the Pages flow, rather than a Worker template. Recommended settings:
 
-| Setting | Value |
-| --- | --- |
-| Framework preset | React (Vite) |
-| Production branch | Your chosen release branch, usually `main` |
-| Root directory | Repository root |
-| Build command | `npm run check` |
-| Build output directory | `dist` |
-| Node version | `24` via `.nvmrc`; set `NODE_VERSION=24` if needed |
-| Environment variables / secrets | None required by the app |
+| Setting                         | Value                                              |
+| ------------------------------- | -------------------------------------------------- |
+| Framework preset                | React (Vite)                                       |
+| Production branch               | Your chosen release branch, usually `main`         |
+| Root directory                  | Repository root                                    |
+| Build command                   | `npm run check`                                    |
+| Build output directory          | `dist`                                             |
+| Node version                    | `24` via `.nvmrc`; set `NODE_VERSION=24` if needed |
+| Environment variables / secrets | None required by the app                           |
 
 The normal [Cloudflare Vite build settings](https://developers.cloudflare.com/pages/configuration/build-configuration/) use `npm run build` and `dist`. Here, `npm run check` also runs lint and tests **inside the Pages build**, so a failed check stops that deployment even though GitHub Actions runs independently. Verify the Node override against the [Pages build-image documentation](https://developers.cloudflare.com/pages/configuration/build-image/).
 
@@ -239,3 +239,7 @@ If a release breaks:
 5. Verify the smoke test again and document the failure and the test that would have caught it.
 
 Future schema changes need a migration and rollback plan: older app versions may reject a newer backup. Keep a known-good versioned backup before upgrades.
+
+## CI/CD
+
+Changes to the main branch are validated through automated GitHub Actions quality checks before merging.
