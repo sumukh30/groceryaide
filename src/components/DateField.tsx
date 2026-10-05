@@ -1,5 +1,5 @@
 import { lazy, Suspense, useId } from 'react'
-import { validDate } from '../domain/inventory'
+import { localDate, validDate } from '../domain/inventory'
 import { useDisclosure } from '../hooks/useDisclosure'
 import LoadBoundary from './LoadBoundary'
 const Calendar = lazy(() => import('./Calendar'))
@@ -35,7 +35,7 @@ export default function DateField({
           placeholder="YYYY-MM-DD"
           value={value}
           aria-describedby="date-help"
-          aria-invalid={value !== '' && !validDate(value)}
+          aria-invalid={value !== '' && (!validDate(value) || value < localDate())}
           onChange={(event) => onChange(event.target.value)}
         />
         <button

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { localDate, validateInput } from '../domain/inventory'
+import { localDate, validateSaveInput } from '../domain/inventory'
 import type { Category, Grocery, GroceryInput } from '../domain/inventory'
 
 import CategorySelect from './CategorySelect'
@@ -23,7 +23,7 @@ export default function ItemForm({ item, onSave, onCancel }: Props) {
     event.preventDefault()
     try {
       onSave(
-        validateInput({ name, category, quantity: Number(quantity), date }),
+        validateSaveInput({ name, category, quantity: Number(quantity), date }),
       )
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Unable to save item.')

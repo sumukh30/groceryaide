@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { DayPicker } from '@daypicker/react'
 import '@daypicker/react/style.css'
 import './Calendar.css'
-import { validDate } from '../domain/inventory'
+import { localDate, validDate } from '../domain/inventory'
 import { useReducedMotion } from '../hooks/useReducedMotion'
 
 // Local noon avoids UTC parsing and supports four-digit years, including 0001–0099.
@@ -42,6 +42,7 @@ export default function Calendar({
     <div ref={root}>
       <DayPicker
         mode="single"
+        disabled={{ before: new Date(`${localDate()}T00:00:00`) }}
         animate={!reducedMotion}
         autoFocus={active}
         selected={selected}

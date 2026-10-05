@@ -81,6 +81,12 @@ export function validateInput(input: GroceryInput): GroceryInput {
     date: input.date,
   }
 }
+export function validateSaveInput(input: GroceryInput): GroceryInput {
+  const valid = validateInput(input)
+  if (valid.date < localDate())
+    throw new Error('Reminder date must be today or later.')
+  return valid
+}
 export function addItem(
   state: Inventory,
   input: GroceryInput,
@@ -94,7 +100,7 @@ export function addItem(
     throw new Error('Item ID already exists.')
   return {
     ...state,
-    items: [...state.items, { ...validateInput(input), id, status: 'active' }],
+    items: [...state.items, { ...validateSaveInput(input), id, status: 'active' }],
   }
 }
 export function editItem(
@@ -102,7 +108,7 @@ export function editItem(
   id: string,
   input: GroceryInput,
 ): Inventory {
-  const valid = validateInput(input)
+  const valid = validateSaveInput(input)
   if (!state.items.some((item) => item.id === id))
     throw new Error('Item no longer exists.')
   return {
