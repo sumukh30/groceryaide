@@ -29,6 +29,7 @@ import HeroBackdrop from './components/HeroBackdrop'
 import LoadBoundary from './components/LoadBoundary'
 const ItemForm = lazy(() => import('./components/ItemForm'))
 import ItemCard from './components/ItemCard'
+import ConfirmDialog from './components/ConfirmDialog'
 
 function download(content: string, name: string) {
   const url = URL.createObjectURL(
@@ -72,6 +73,9 @@ export default function App() {
   const [actionError, setActionError] = useState('')
   const [pendingImport, setPendingImport] = useState<Inventory | null>(null)
   const [importing, setImporting] = useState(false)
+  const [confirmation, setConfirmation] = useState<{
+    title: string; message: string; label: string; run: () => void
+  } | null>(null)
   const [history, setHistory] = useState(false)
   const addButton = useRef<HTMLButtonElement>(null)
   const editorTrigger = useRef<HTMLElement | null>(null)
@@ -168,18 +172,33 @@ export default function App() {
           )
         }
         onDelete={() => {
-          if (
-            window.confirm(
-              `Permanently delete “${item.name}”? This also removes it from summary counts.`,
-            )
-          )
-            action(() => commit(deleteItem(data, item.id)), 'Grocery deleted.')
+          setConfirmation({
+            title: `Delete ${item.name}?`,
+            message: `Are you sure you want to permanently delete ${item.name}? This action cannot be undone.`,
+            label: 'Delete',
+            run: () => {
+              action(() => commit(deleteItem(data, item.id)), 'Grocery deleted.')
+            },
+          })
         }}
       />
     )
   }
   return (
     <>
+      {confirmation && (
+        <ConfirmDialog
+          title={confirmation.title}
+          message={confirmation.message}
+          label={confirmation.label}
+          onFocusFallback={() => addButton.current?.focus()}
+          onClose={() => setConfirmation(null)}
+          onConfirm={() => {
+            confirmation.run()
+            setConfirmation(null)
+          }}
+        />
+      )}
       <a className="skip-link" href="#main">
         Skip to inventory
       </a>
@@ -253,15 +272,12 @@ export default function App() {
                   </button>
                   <button
                     onClick={() => {
-                      if (
-                        window.confirm(
-                          'Start fresh? This replaces unreadable saved data. Export the original first if you need to recover it.',
-                        )
-                      )
-                        action(
-                          () => commit(emptyInventory(), true),
-                          'Started a fresh inventory.',
-                        )
+                      setConfirmation({
+                        title: 'Start fresh?',
+                        message: 'This replaces unreadable saved data. Export the original first if you need to recover it.',
+                        label: 'Start fresh',
+                        run: () => action(() => commit(emptyInventory(), true), 'Started a fresh inventory.'),
+                      })
                     }}
                   >
                     Start fresh
@@ -281,12 +297,12 @@ export default function App() {
               )}
               <button
                 onClick={() => {
-                  if (
-                    window.confirm(
-                      'Reload? Any changes only in memory will be lost. Export them first.',
-                    )
-                  )
-                    window.location.reload()
+                  setConfirmation({
+                    title: 'Reload?',
+                    message: 'Any changes only in memory will be lost. Export them first.',
+                    label: 'Reload',
+                    run: () => window.location.reload(),
+                  })
                 }}
               >
                 Reload

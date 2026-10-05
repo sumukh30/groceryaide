@@ -53,9 +53,9 @@ export default function ItemCard({
       <div className="item-actions flex flex-wrap gap-2">
         {item.status === 'active' ? (
           <>
-            <button onClick={() => onStatus('used')}>Used</button>
-            <button onClick={() => onStatus('discarded')}>Discard</button>
-            <button onClick={onEdit}>Edit</button>
+            <button className="action-used" onClick={() => onStatus('used')}>Used</button>
+            <button className="action-discard" onClick={() => onStatus('discarded')}>Discard</button>
+            <button className="action-edit" onClick={onEdit}>Edit</button>
           </>
         ) : (
           <button onClick={() => onStatus('active')}>Restore</button>

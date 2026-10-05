@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { addItem, addShopping, emptyInventory, setStatus } from './inventory'
+import { addItem, addShopping, emptyInventory, localDate, setStatus } from './inventory'
 import {
   exportBackup,
   loadInventory,
@@ -16,7 +16,7 @@ const data = addShopping(
         name: 'Milk',
         category: 'Dairy & eggs',
         quantity: 2,
-        date: '2026-09-24',
+        date: localDate(),
       },
       'g1',
     ),
@@ -28,6 +28,11 @@ const data = addShopping(
 )
 
 describe('versioned backup validation', () => {
+  it('preserves past reminder dates when loading and exporting existing inventory', () => {
+    const existing = { ...data, items: [{ ...data.items[0], date: '2020-01-01' }] }
+    expect(parseBackup(exportBackup(existing))).toEqual(existing)
+    expect(loadInventory({ getItem: () => JSON.stringify(existing) }).data).toEqual(existing)
+  })
   it('rejects an export whose formatted size would exceed the import limit', () => {
     const large = {
       ...emptyInventory(),

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import App from './App'
@@ -7,9 +7,12 @@ import { exportBackup, parseBackup, STORAGE_KEY } from './domain/storage'
 
 beforeEach(() => {
   vi.restoreAllMocks()
+  vi.setSystemTime(new Date(2026, 8, 24, 12))
   localStorage.clear()
   vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
 })
+
+afterEach(() => vi.useRealTimers())
 
 describe('kitchen workflow', () => {
   it('downloads a valid backup without changing the saved inventory', async () => {
@@ -63,10 +66,10 @@ describe('kitchen workflow', () => {
     mounted.unmount()
     render(<App />)
     expect(screen.getByRole('article', { name: 'Baby spinach' })).toBeTruthy()
-    vi.spyOn(window, 'confirm').mockReturnValue(true)
     await user.click(
       screen.getByRole('button', { name: 'Delete Baby spinach' }),
     )
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Delete' }))
     expect(parseBackup(localStorage.getItem(STORAGE_KEY)!).items).toHaveLength(
       0,
     )
@@ -119,14 +122,24 @@ describe('kitchen workflow', () => {
     await user.click(
       within(discarded).getByRole('button', { name: 'Delete Carrots' }),
     )
+    const dialog = screen.getByRole('dialog', { name: 'Delete Carrots?' })
+    expect(dialog.textContent).toContain('permanently delete Carrots')
+    expect(document.activeElement).toBe(within(dialog).getByRole('button', { name: 'Cancel' }))
+    // Escape dispatches the native dialog cancel event; jsdom lacks that browser default.
+    fireEvent(dialog, new Event('cancel', { bubbles: false, cancelable: true }))
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(document.activeElement).toBe(within(discarded).getByRole('button', { name: 'Delete Carrots' }))
+    await user.click(within(discarded).getByRole('button', { name: 'Delete Carrots' }))
     expect(parseBackup(localStorage.getItem(STORAGE_KEY)!).items).toHaveLength(
       2,
     )
-    confirm.mockReturnValue(true)
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Cancel' }))
     await user.click(
       within(discarded).getByRole('button', { name: 'Delete Carrots' }),
     )
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Delete' }))
     expect(screen.queryByRole('article', { name: 'Carrots' })).toBeNull()
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: '+ Add grocery' }))
     expect(
       parseBackup(localStorage.getItem(STORAGE_KEY)!).items.map(
         (item) => item.name,
@@ -157,8 +170,8 @@ describe('kitchen workflow', () => {
       'has not been overwritten',
     )
     expect(localStorage.getItem(STORAGE_KEY)).toBe('{corrupt')
-    vi.spyOn(window, 'confirm').mockReturnValue(true)
     await user.click(screen.getByRole('button', { name: 'Start fresh' }))
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Start fresh' }))
     expect(parseBackup(localStorage.getItem(STORAGE_KEY)!)).toEqual(
       emptyInventory(),
     )

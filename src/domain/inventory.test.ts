@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest'
 import {
   addItem,
   addShopping,
@@ -14,6 +14,9 @@ import {
   validDate,
 } from './inventory'
 import type { GroceryInput } from './inventory'
+beforeEach(() => vi.setSystemTime(new Date(2026, 8, 24, 12)))
+afterEach(() => vi.useRealTimers())
+
 const input: GroceryInput = {
   name: ' Spinach ',
   category: 'Produce',
@@ -52,6 +55,7 @@ describe('calendar reminders', () => {
   })
   it('uses the local calendar day', () => {
     expect(localDate(new Date(2026, 8, 24, 23, 59))).toBe('2026-09-24')
+    expect(localDate(new Date(2026, 8, 24, 0, 1))).toBe('2026-09-24')
   })
 })
 
@@ -116,4 +120,14 @@ describe('inventory operations', () => {
     expect(removeShopping(state, 's1').shopping).toEqual([])
     expect(state.shopping).toHaveLength(1)
   })
+})
+
+it('rejects past dates at both add and edit boundaries, accepting today and future dates', () => {
+  const state = addItem(emptyInventory(), input, 'g1')
+  for (const date of ['2026-09-24', '2026-09-25', '2027-01-01']) {
+    expect(() => addItem(emptyInventory(), { ...input, date })).not.toThrow()
+    expect(() => editItem(state, 'g1', { ...input, date })).not.toThrow()
+  }
+  expect(() => addItem(emptyInventory(), { ...input, date: '2026-09-23' })).toThrow('today or later')
+  expect(() => editItem(state, 'g1', { ...input, date: '2026-09-23' })).toThrow('today or later')
 })

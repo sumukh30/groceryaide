@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest'
 import {
   act,
   fireEvent,
@@ -13,7 +13,8 @@ import CategorySelect from './CategorySelect'
 import DateField from './DateField'
 import type { Category } from '../domain/inventory'
 
-afterEach(() => vi.unstubAllGlobals())
+beforeEach(() => vi.setSystemTime(new Date(2026, 8, 24, 12)))
+afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers() })
 
 function Controls() {
   const [category, setCategory] = useState<Category>('Produce')
@@ -71,6 +72,18 @@ describe('category dropdown', () => {
 })
 
 describe('reminder date', () => {
+  it('disables yesterday while today and tomorrow remain available', async () => {
+    const user = userEvent.setup()
+    render(<Controls />)
+    await openCalendar(user)
+    const yesterday = await screen.findByRole('button', { name: /Wednesday, September 23rd, 2026/ }) as HTMLButtonElement
+    expect(yesterday.disabled).toBe(true)
+    expect((screen.getByRole('button', { name: /Thursday, September 24th, 2026/ }) as HTMLButtonElement).disabled).toBe(false)
+    expect((screen.getByRole('button', { name: /Friday, September 25th, 2026/ }) as HTMLButtonElement).disabled).toBe(false)
+    await user.click(yesterday)
+    expect((screen.getByLabelText('Reminder date') as HTMLInputElement).value).toBe('2026-09-25')
+  })
+
   async function openCalendar(user: ReturnType<typeof userEvent.setup>) {
     await user.click(
       screen.getByRole('button', { name: 'Choose reminder date' }),
@@ -139,6 +152,7 @@ describe('reminder date', () => {
     expect(document.activeElement).toBe(selected)
   })
   it('accepts leap dates and flags invalid dates without silently normalizing them', async () => {
+    vi.setSystemTime(new Date(2024, 1, 28, 12))
     const user = userEvent.setup()
     render(<Controls />)
     const input = screen.getByLabelText('Reminder date') as HTMLInputElement
@@ -153,6 +167,7 @@ describe('reminder date', () => {
     expect(input.value).toBe('2025-02-29')
   })
   it('preserves years below 100 in calendar selection', async () => {
+    vi.setSystemTime(new Date('0099-06-14T12:00:00'))
     const user = userEvent.setup()
     render(<Controls />)
     const input = screen.getByLabelText('Reminder date') as HTMLInputElement

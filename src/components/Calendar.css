@@ -57,3 +57,10 @@
 .calendar-popover .rdp-month[aria-hidden='true'] {
   visibility: hidden;
 }
+
+.calendar-popover .rdp-disabled .rdp-day_button {
+  color: var(--muted-text);
+  background: var(--neutral-soft);
+  text-decoration: line-through;
+  cursor: not-allowed;
+}
