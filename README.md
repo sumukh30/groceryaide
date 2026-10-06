@@ -4,6 +4,10 @@ A local-first grocery inventory, date-reminder dashboard, and shopping list buil
 
 **Date reminders are not food-safety determinations.** A reminder uses a date you enter; it does not establish whether food is safe or unsafe to eat. This MVP shows reminders while the application is open and does not send background notifications.
 
+## Live application
+
+Production: https://groceryaide.sumukh-govinda666.workers.dev/
+
 ## Run locally
 
 Use Node.js 24 (see `.nvmrc`) and npm. If you use nvm, run `nvm use` first.
@@ -30,31 +34,32 @@ Open the URL printed by Vite. No environment variables or secrets are required.
 ## Features and behavior
 
 - Add, edit, search, and delete groceries with name, category, quantity, and reminder date.
-- **Check today:** today or earlier; **Coming up:** the next three calendar days; **For later:** four or more days away. Items sort by date, then name.
+- Reminder dates must be today or later. **Check today:** today; **Coming up:** the next three calendar days; **For later:** four or more days away. Items sort by date, then name.
 - Reminders use your device's local date, refreshed every 30 seconds and when the window regains focus. Calendar arithmetic avoids daylight-saving-time shifts.
 - Mark groceries used or discarded; restore them from history. Summary counts represent **entries**, not summed quantities or servings. Deleting an entry also removes it from counts.
 - Search names and categories in both inventory and expanded history.
 - Add/remove shopping items; reject blank or duplicate shopping names (case-insensitive).
 - Download and import versioned JSON backups. An import is validated in full and previewed before you explicitly replace current inventory, history, and shopping data.
-- Responsive layout, visible keyboard focus, labelled form inputs, an accessible category listbox and calendar, skip link, status announcements, and clear empty/error states. Destructive deletion uses the browser's confirmation dialog.
+- Responsive layout, visible keyboard focus, labelled form inputs, an accessible category listbox and calendar, skip link, status announcements, and clear empty/error states. Permanent deletion uses a GroceryAide confirmation dialog instead of the browser confirmation UI.
 
-Quantity is an integer from 1 through 999; names are trimmed and limited to 100 characters. Dates must be real calendar dates in `YYYY-MM-DD` format (years 0001–9999); past dates are allowed. Each list is limited to 5,000 entries, and backups to 2 MB. This is intended for household-sized inventories.
+Quantity is an integer from 1 through 999; names are trimmed and limited to 100 characters. Dates must be real calendar dates in `YYYY-MM-DD` format and cannot be earlier than the device's current local date. Each list is limited to 5,000 entries, and backups to 2 MB. This is intended for household-sized inventories.
 
 ## Architecture
 
-| File                          | Responsibility                                                           |
-| ----------------------------- | ------------------------------------------------------------------------ |
-| `src/domain/inventory.ts`     | Types, validation, immutable CRUD operations, summaries, date grouping   |
-| `src/domain/storage.ts`       | Versioned schema validation, JSON import/export, localStorage adapter    |
-| `src/hooks/useInventory.ts`   | React state, persistence status, storage errors and stale-tab protection |
-| `src/components/ItemForm.tsx` | Accessible add/edit form                                                 |
-| `src/components/ItemCard.tsx` | Grocery details and actions                                              |
-| `src/App.tsx`                 | Dashboard, shopping list, history and backup workflow                    |
-| `src/index.css`               | Tailwind import, responsive layout and visual styles                     |
-| `src/domain/*.test.ts`        | Domain and persistence tests                                             |
-| `src/App.test.tsx`            | User interaction and recovery tests with Testing Library/jsdom           |
-| `.github/workflows/ci.yml`    | Install, lint, test, build, and upload build artifact                    |
-| `public/_headers`             | Cloudflare Pages security headers                                        |
+| File                               | Responsibility                                                           |
+| ---------------------------------- | ------------------------------------------------------------------------ |
+| `src/domain/inventory.ts`          | Types, validation, immutable CRUD operations, summaries, date grouping   |
+| `src/domain/storage.ts`            | Versioned schema validation, JSON import/export, localStorage adapter    |
+| `src/hooks/useInventory.ts`        | React state, persistence status, storage errors and stale-tab protection |
+| `src/components/ItemForm.tsx`      | Accessible add/edit form                                                 |
+| `src/components/ItemCard.tsx`      | Grocery details and actions                                              |
+| `src/components/ConfirmDialog.tsx` | Accessible confirmation dialog for permanent deletion                    |
+| `src/App.tsx`                      | Dashboard, shopping list, history and backup workflow                    |
+| `src/index.css`                    | Tailwind import, responsive layout and visual styles                     |
+| `src/domain/*.test.ts`             | Domain and persistence tests                                             |
+| `src/App.test.tsx`                 | User interaction and recovery tests with Testing Library/jsdom           |
+| `.github/workflows/ci.yml`         | Install, lint, test, build, and upload build artifact                    |
+| `public/_headers`                  | Custom security headers for Cloudflare-served static assets              |
 
 Domain code has no React dependency. Untrusted backup data is parsed as `unknown`, checked field by field, and reconstructed from allowed fields. No imported content is interpreted as HTML. Schema version 1 is shared by browser persistence and downloadable backups; unsupported versions are rejected rather than guessed. Add explicit migrations and compatibility tests before changing that schema.
 
@@ -80,7 +85,7 @@ UI components:
 
 Summary variants use named classes rather than their position in a list. In your kitchen has dark neutral text on a light surface; Check today retains warm cream/yellow; Used has a solid GroceryAide green surface with white heading, count and supporting text; Discarded uses warm orange-brown heading/count and a tinted border. Every tile retains its label and count.
 
-`StatusBadge` renders **Used** (green/white with a check) or **Discarded** (orange-brown/white with a bin) in history. Icons are decorative; text is always visible. **Discard** updates status and keeps the record in history. **Delete** uses the existing confirmation and removes the record entirely. Persistence/schema logic is unchanged.
+`StatusBadge` renders **Used** (green/white with a check) or **Discarded** (orange-brown/white with a bin) in history. Icons are decorative; text is always visible. **Discard** updates status and keeps the record in history. **Delete** opens the custom confirmation dialog and removes the record entirely only after confirmation. Persistence/schema logic is unchanged.
 
 Theme additions include dark neutral text, an orange border, white-on-accent text, green focus/shadow tokens, a shared 46 px control height, and restrained elevation shadows. Motion uses 200 ms and `cubic-bezier(0.2, 0.8, 0.2, 1)`. True hover styles require both `(hover: hover)` and `(pointer: fine)`; summary/item cards lift 2 px, the Used tile deepens in green, and the hero action gains a stronger shadow. Cards stay non-clickable with the default cursor. Touch users retain pressed states and keyboard users retain green focus rings. Reduced motion removes translations, not just transition duration.
 
@@ -96,7 +101,7 @@ The video occupies the right 58% with `object-fit: cover`, rounded clipping, and
 
 ### Calendar and popup behavior
 
-The [DayPicker single-selection API](https://daypicker.dev/start) supplies accessible day labels, arrow-key navigation, today/selected states and previous/next month controls. The calendar and its stylesheet load only on first opening; the editable date field works without them. Input remains `YYYY-MM-DD` with the original year range 0001–9999. Date-only values are parsed at local noon and serialized with local year/month/day getters, never `toISOString()`, avoiding UTC offsets shifting the selected day. Invalid dates stay visible and are rejected by the unchanged domain validator.
+The [DayPicker single-selection API](https://daypicker.dev/start) supplies accessible day labels, arrow-key navigation, today/selected states and previous/next month controls. The calendar and its stylesheet load only on first opening; the editable date field works without them. Input remains `YYYY-MM-DD`. Past dates are disabled in the calendar and rejected by application validation; today and future dates are allowed. Date-only values use local calendar semantics rather than UTC serialization, avoiding timezone offsets shifting the selected day.
 
 Popups animate opacity/translation for 200 ms. Closing immediately makes the retained exit frame inert and hidden from assistive technology. Escape and selection return focus to the trigger; outside clicks and Tab dismiss without trapping focus. The calendar is a nonmodal dialog. The grocery editor remains an inline section, supports Escape, and returns focus to its opening Add/Edit button.
 
@@ -126,120 +131,151 @@ The app works without API calls once loaded, but **offline reload is not guarant
 
 ## Release verification
 
-The frontend release was verified with `npm run lint`, `npm test` (71 passing tests in six files), `npm run build`, and `npm run preview`. Headless Chrome against the production build confirmed actual MP4 playback at 320, 375, 768, 1280, and 1600 px, no page overflow, deferred editor/calendar chunks, popup bounds and initial focus, pause/resume, offscreen pause, reduced-motion suppression, and blocked-media fallback. No runtime exceptions were reported. Hero height stayed unchanged before/after playback, and mobile Add/Pause controls did not overlap. The supplied MP4 and built copy have identical SHA-256 hashes.
+The v1 release is validated through the project's `npm run check` command, which runs linting, automated tests, and the production build. The same quality checks run in GitHub Actions on pushes and pull requests. The public deployment was also smoke-tested after Cloudflare deployed the current `main` branch.
 
-Core text/background pairs were checked numerically: Used white/green 8.10:1, Discarded badge white/orange-brown 5.98:1, Discarded tile 5.92:1, and muted text on light green 4.84:1. These checks do not replace the manual browser/device checklist below.
+Manual release checks cover the hero video and fallback behavior, responsive layout, grocery add/edit/use/discard/delete flows, custom delete confirmation, prevention of past reminder dates, search, shopping-list behavior, history badges, localStorage persistence, and JSON export/import.
 
 ## Verify milestones
 
 1. **Domain:** `npm test -- src/domain`. This checks date boundaries (including leap years and DST), validation, CRUD, summary counts, shopping operations, malformed saved data, duplicate IDs, size limits, and backup round trips.
-2. **UI:** `npm test -- src/App.test.tsx`, then `npm run dev`. Add groceries dated yesterday, today, three days ahead, and four days ahead. Check grouping; edit, search, use, discard, restore, and delete. Add/remove shopping entries. Reload to check persistence.
+2. **UI:** `npm test -- src/App.test.tsx`, then `npm run dev`. Verify that yesterday is rejected while today and future dates are accepted. Check grouping; edit, search, use, discard, restore, and delete through the custom confirmation dialog. Add/remove shopping entries. Reload to check persistence.
 3. **Recovery:** Export a backup, change your inventory, import the backup, inspect the preview, cancel once, then confirm. Try an invalid JSON file and verify the current inventory survives. Automated tests also simulate storage write failures and a stale tab.
 4. **Release:** `npm run check`, then `npm run preview`. Repeat the main flow against the production build. At mobile width (320–390 px), verify there is no horizontal scrolling, and use Tab/Shift+Tab/Enter to reach controls. Check actual downloads and file selection in your browser; jsdom does not verify native dialogs, layout, or real browser storage policy.
 
 For a corrupt-storage drill, use a disposable browser profile or export first. In browser DevTools → Application → Local Storage, set `groceryaide.inventory` to invalid JSON and reload. Confirm the recovery warning appears and the raw value remains intact. Export the original, then restore a valid backup. Do not run destructive storage experiments on your only copy.
 
-## Upload to GitHub
+## Git and pull-request workflow
 
-This repository already has Git initialized. Upload the source, lockfile, configuration, tests, and public media together; uploading only this README will not publish a runnable project. The commands below are manual steps and do not deploy the website.
+`main` is the production branch and is protected by repository rules. Application changes should be made on a feature/fix branch and merged through a pull request.
 
-```sh
-git status --short
-git diff
-# Optional: start a branch before your first commit.
-git switch -c feat/groceryaide-mvp
-```
-
-Stage known application paths rather than blindly including personal files (the existing `Notes.txt` is not part of the app):
+Typical workflow:
 
 ```sh
-git add src index.html package.json package-lock.json vite.config.ts tsconfig.app.json
-git add README.md .gitignore .nvmrc .github/workflows/ci.yml public
-git diff --cached
+git switch main
+git pull --ff-only
+git switch -c <branch-name>
+
+# make and verify changes
 npm run check
-git commit -m "feat: build local-first GroceryAide MVP"
-git log --oneline -5
+
+git status
+git diff
+git add .
+git commit -m "<type>: <message>"
+git push -u origin <branch-name>
 ```
 
-Create an empty repository in your GitHub account. Leave the initial README, license, and .gitignore options unchecked because this project already has local history and files. Then run:
+Open a pull request into `main`, review the diff, and wait for the required GitHub Actions quality check to pass before merging. Required status checks act as a merge gate on the protected branch.
+
+After a pull request is merged, synchronize the local production branch:
 
 ```sh
-git remote -v
-# Only if no origin exists: replace YOUR_USERNAME and YOUR_REPOSITORY.
-git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git
-git push -u origin HEAD
+git switch main
+git pull --ff-only
 ```
 
-If `origin` already exists, verify its destination and skip `git remote add`. The push publishes your current branch; select that branch on GitHub to see the files. If you used the optional feature branch above, merge it into your chosen default branch when ready. Authenticate through Git's credential manager or SSH; do not put access tokens in files or remote URLs.
+`--ff-only` is used as a guardrail: local `main` is expected to move forward to the GitHub `main` history without creating an unexpected merge commit.
 
-Confirm that GitHub displays the README, `src/`, `public/media/groceryaide_backgrnd.mp4`, `package-lock.json`, and `.github/workflows/ci.yml`. Check the **Quality checks** workflow result after pushing. `node_modules/`, `dist/`, environment files, and personal `Notes.txt` are ignored. Uploading to GitHub does not by itself deploy the app; the included workflow checks and builds only.
+## CI/CD and production deployment
 
-For future changes, run `npm run check`, review the diff, commit, and push. Keep unrelated changes separate.
+### Continuous Integration
 
-## Static release commands
+GitHub Actions runs the repository's quality workflow on pushes and pull requests. The workflow installs dependencies and executes the project's automated quality checks, including linting, tests, and a production build.
 
-```sh
-npm ci
-npm run lint
-npm test
-npm run build
-npm run preview -- --host 127.0.0.1
+The `main` branch is protected so the required quality check must pass before a pull request is merged. GitHub supports required status checks specifically to prevent changes from entering a protected branch until the selected checks have completed successfully.
+
+### Continuous Deployment
+
+GroceryAide is connected to Cloudflare Workers Builds through the Git repository.
+
+Production branch: `main`
+
+Production URL:
+
+https://groceryaide.sumukh-govinda666.workers.dev/
+
+When a commit reaches `main`, Cloudflare automatically starts the production build. The configured build command compiles the Vite application, and the production deploy step publishes the new version to the existing Worker. No manual upload of `dist/` is required for the normal release path.
+
+Cloudflare Workers Builds treats the production branch separately from preview branches. The v1 release depends on the tested production path from `main`; branch-preview deployment is not a required merge gate for v1.
+
+### Production release flow
+
+```text
+Local development
+        ↓
+Feature/fix branch
+        ↓
+Local quality checks
+        ↓
+Commit and push
+        ↓
+Pull request into main
+        ↓
+GitHub Actions CI
+        ↓
+Required status check passes
+        ↓
+Merge into protected main
+        ↓
+Cloudflare detects the new main commit
+        ↓
+Production build
+        ↓
+Automatic deployment
+        ↓
+Production smoke test
 ```
 
-Open the preview URL and run the checklist below. Stop preview with Ctrl+C. Publish the **contents of `dist/`** to your static HTTPS host, including `assets/`, `media/`, and `_headers` on hosts that support that file. No server process, backend, database, authentication, or runtime environment variables are required. There are no client-side routes requiring SPA rewrites.
+### Production smoke test
 
-The default build is for a domain root. For a subdirectory deployment, build with `npm run build -- --base=/groceryaide/`, serve at that same prefix, and verify both the video and deferred calendar/editor chunks. The hero paths use Vite's base URL. Do not deploy `src/`, `node_modules/`, private notes, or environment files. Vite preview does not apply host-specific `_headers`; verify those on the public origin.
+After a production deployment, verify:
 
-### Before committing and deploying
-
-1. Review `git status --short` and `git diff`; include the supplied MP4 and SVG, new components/tests, and configuration. Keep personal `Notes.txt` out of the release.
-2. Run the commands above. At 375, 768, 1280, and 1600 px, check the hero, summary tiles, search, shopping list, category menu, and calendar. Also check 320 px and 200% zoom.
-3. Confirm visible silent looping playback, pause/resume, and no overlap with Add grocery. Enable reduced motion and reload: the illustration should appear with no MP4 request. Block the media URL in DevTools and reload to check fallback.
-4. Using only the keyboard, add/edit an item, select a category/date, close popups with Escape, and check focus returns. Check Safari/iOS, Firefox, mobile keyboard behavior, and a screen reader on actual devices.
-5. Add and edit groceries, search, mark one Used and another Discarded, restore, and delete. Verify separate history labels and counts. Reload to verify persistence. Add/remove shopping entries.
-6. Export a backup, change data, import, cancel once, then confirm replacement. Test invalid JSON in a disposable profile. Never clear your only copy of an inventory.
-7. On the deployed HTTPS origin, verify JS/CSS/video requests succeed, response headers apply, and Console shows no runtime/CSP errors. Export from localhost and import on the new origin if moving existing data.
-
-## CI and Cloudflare Pages deployment
-
-The included GitHub Actions workflow performs checks and stores a build artifact; it has no deployment step or credentials. It runs on pushes, pull requests, and manual dispatch after the files are pushed to GitHub.
-
-Follow the upload steps above to publish your branch. Open a pull request and inspect the **Quality checks / check** job in Actions. Configure branch protection to require that check if desired; this is a separate repository setting, not something a workflow can enforce by itself.
-
-To deploy, use Cloudflare Pages' **Git integration** and connect the chosen repository. Select the Pages flow, rather than a Worker template. Recommended settings:
-
-| Setting                         | Value                                              |
-| ------------------------------- | -------------------------------------------------- |
-| Framework preset                | React (Vite)                                       |
-| Production branch               | Your chosen release branch, usually `main`         |
-| Root directory                  | Repository root                                    |
-| Build command                   | `npm run check`                                    |
-| Build output directory          | `dist`                                             |
-| Node version                    | `24` via `.nvmrc`; set `NODE_VERSION=24` if needed |
-| Environment variables / secrets | None required by the app                           |
-
-The normal [Cloudflare Vite build settings](https://developers.cloudflare.com/pages/configuration/build-configuration/) use `npm run build` and `dist`. Here, `npm run check` also runs lint and tests **inside the Pages build**, so a failed check stops that deployment even though GitHub Actions runs independently. Verify the Node override against the [Pages build-image documentation](https://developers.cloudflare.com/pages/configuration/build-image/).
-
-Once enabled, [Pages Git integration](https://developers.cloudflare.com/pages/get-started/git-integration/) can automatically publish on pushes and create preview deployments. Review branch build controls before connecting if you want manual release control. A preview URL has its own browser storage; an empty preview inventory does not mean production data was lost.
-
-`public/_headers` is copied to `dist/` and applied by Pages. Local Vite preview does not apply that file. The CSP assumes no externally injected analytics scripts; revisit it if adding integrations. There are no client-side routes requiring custom rewrites.
+1. The public GroceryAide URL loads successfully.
+2. The hero video loads and its fallback still works.
+3. Add and edit grocery flows work.
+4. Past reminder dates cannot be selected or saved; today and future dates are accepted.
+5. Used and Discard actions move entries to history with the correct status badges.
+6. Delete opens the custom confirmation dialog and permanently removes the item only after confirmation.
+7. Search and shopping-list actions work.
+8. Reloading preserves browser-local data.
+9. JSON export/import still works.
+10. DevTools Console and Network do not show unexpected application or asset-loading failures.
 
 ## Monitoring and recovery
 
-For each release, record the commit SHA and deployment URL, inspect both Actions and Pages build logs, then smoke-test the deployed site: add an item, reload, edit it, mark it used, restore it, and export/import a backup. Check DevTools Console for runtime errors and Network for failed JS/CSS requests. Test the production domain's security headers, because local preview cannot validate Pages configuration.
+GroceryAide v1 does not include Sentry, server-side metrics, automatic uptime alerts, or a backend observability stack. Release monitoring is currently based on GitHub Actions results, Cloudflare build/deployment status, browser DevTools, and the manual production smoke test.
 
-The storage-status label and recovery warnings provide local persistence monitoring. No third-party monitoring or paid service is installed. For the MVP, use these manual checks after releases and collect reproducible bug reports (browser, URL, steps, console error; avoid sharing personal backups publicly). This does not provide automatic uptime alerts or visibility into other users' runtime failures.
+For a bad application release:
 
-If a release breaks:
+1. Preserve browser data first by exporting a backup if possible.
+2. Identify the last known-good Cloudflare Worker deployment.
+3. Cloudflare Workers can roll back to a previously deployed Worker version from the dashboard.
+4. Also revert the faulty Git commit through a normal branch and pull request:
 
-1. Preserve data first: export from the affected browser if possible. Do not clear storage as the first troubleshooting step.
-2. Use [Cloudflare Pages rollback](https://developers.cloudflare.com/pages/configuration/rollbacks/) to select a prior successful production deployment. This restores application files, not browser data.
-3. Revert the faulty commit with `git revert <commit-sha>`, run `npm run check`, review, and push the fix through your approved release process. A revert creates an auditable new commit rather than rewriting shared history.
-4. If browser data is damaged, use **Export original saved data** before resetting, then import a known-good JSON backup. Without a backup, cleared browser data cannot be recovered by the host or by a code rollback.
-5. Verify the smoke test again and document the failure and the test that would have caught it.
+```sh
+git switch main
+git pull --ff-only
+git switch -c fix/revert-<short-description>
+git revert <commit-sha>
+npm run check
+git push -u origin fix/revert-<short-description>
+```
 
-Future schema changes need a migration and rollback plan: older app versions may reject a newer backup. Keep a known-good versioned backup before upgrades.
+5. Let the required CI check pass, merge the revert, and verify the automatic production deployment.
+6. Run the smoke test again.
 
-## CI/CD
+A code rollback does not restore deleted browser-local data. GroceryAide v1 has no server-side database; recovery of user data depends on browser storage and exported JSON backups.
 
-Changes to the main branch are validated through automated GitHub Actions quality checks before merging.
+## Known v1 limitations
+
+- Data is stored only in the current browser/profile and does not sync across devices.
+- There is no user authentication or account system.
+- There is no backend API or shared database.
+- There is no server-side analytics, tracing, Sentry integration, or automatic uptime monitoring.
+- There is no service worker or installable PWA, so offline reload is not guaranteed.
+- Cloudflare branch-preview deployment is not part of the required v1 release path.
+- Load testing is intentionally deferred until a backend/API exists.
+
+## Planned v2 direction
+
+A future version can introduce a FastAPI backend, PostgreSQL, database migrations, authentication, containerization, server-side error tracking and structured logging, health/readiness endpoints, and API load testing. These are intentionally outside the v1 scope so that v1 remains a complete frontend shipping and CI/CD milestone.
